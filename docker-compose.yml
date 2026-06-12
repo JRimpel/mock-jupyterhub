@@ -2,6 +2,7 @@ services:
     xdmod:
         image: tools-ext-01.ccr.xdmod.org/xdmod:x86_64-rockylinux8.10.20240528-v11.0.2-3-01
         hostname: xdmod
+        container_name: xdmod
         networks:
             - jupyter-net
         shm_size: 2g
@@ -33,7 +34,7 @@ networks:
     jupyter-net:
 secrets:
     jwt-public-key:
-        file: ./jwt-service/jwt-key.pub
+        file: ./jwt-key.pub
     jwt-private-key:
-        file: ./jwt-service/jwt-key
+        file: ./jwt-key
 
