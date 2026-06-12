@@ -1,0 +1,39 @@
+services:
+    xdmod:
+        image: tools-ext-01.ccr.xdmod.org/xdmod:x86_64-rockylinux8.10.20240528-v11.0.2-3-01
+        hostname: xdmod
+        networks:
+            - jupyter-net
+        shm_size: 2g
+        ports:
+            - "8443:443"
+        stdin_open: true
+        tty: true
+        command: sleep infinity
+    notebook:
+        image: xdmod-data
+        hostname: notebook
+        environment:
+            XDMOD_HOST: "https://xdmod:8443/"
+            JWT_SERVICE_URL: "http://jwt-service:9888/"
+        networks:
+            - jupyter-net
+        expose:
+            - 8888
+    jwt-service:
+        build: ./jwt-service
+        hostname: jwt-service
+        secrets:
+            - jwt-private-key
+        networks:
+            - jupyter-net
+        expose:
+            - 9888
+networks:
+    jupyter-net:
+secrets:
+    jwt-public-key:
+        file: ./jwt-service/jwt-key.pub
+    jwt-private-key:
+        file: ./jwt-service/jwt-key
+
