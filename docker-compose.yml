@@ -14,16 +14,20 @@ services:
     notebook:
         image: xdmod-data
         hostname: notebook
+        container_name: notebook
         environment:
-            XDMOD_HOST: "https://xdmod:8443/"
-            JWT_SERVICE_URL: "http://jwt-service:9888/"
+            XDMOD_HOST: "https://xdmod:443/"
+            JUPYTERHUB_JWT_URL: "http://jwt-service:9888/"
+            CURL_CA_BUNDLE: "/etc/pki/tls/certs/xdmod.crt"
         networks:
             - jupyter-net
-        expose:
-            - 8888
+        ports:
+            - "8888:8888"
+        command: start-notebook.py --ServerApp.allow_origin='*' --NotebookApp.token=secret
     jwt-service:
         build: ./jwt-service
         hostname: jwt-service
+        container_name: jwt-service
         secrets:
             - jwt-private-key
         networks:
