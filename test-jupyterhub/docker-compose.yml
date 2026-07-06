@@ -1,0 +1,67 @@
+services:
+    xdmod:
+        image: tools-ext-01.ccr.xdmod.org/xdmod:x86_64-rockylinux8.10.20240528-v11.0.2-3-01
+        hostname: xdmod
+        container_name: xdmod1
+        networks:
+            - jupyter-net
+        shm_size: 2g
+        stdin_open: true
+        tty: true
+        command: sleep infinity
+        expose:
+            - 443
+        volumes:
+            - ./xdmod1.crt:/etc/pki/tls/certs/xdmod1.crt
+            - ./xdmod1.key:/etc/pki/tls/private/xdmod1.key
+    jwt-service:
+        build: ../jwt-service
+        hostname: jwt-service
+        container_name: jwt-service1
+        secrets:
+            - jwt-private-key
+        networks:
+            - jupyter-net
+        expose:
+            - 9888      
+    jupyterhub:
+        build: .
+        hostname: jupyterhub
+        container_name: jupyterhub
+        networks: 
+            - jupyter-net
+        volumes: 
+            - ./jupyterhub_config.py:/srv/jupyterhub/jupyterhub_config.py
+            - "/var/run/docker.sock:/var/run/docker.sock"
+        expose:
+            - 8001
+    chart-service:
+       build: ./chart-service/
+       hostname: chart-service
+       container_name: chart-service
+       networks:
+            - jupyter-net
+       expose:
+            - 2323
+    web-server:
+       image: nginx:1.14.1
+       hostname: web-server
+       container_name: web-server
+       networks:
+            - jupyter-net
+       ports:
+            - "8443:443"
+       volumes:
+            - ./dhparams.pem:/etc/xdmod/dhparams.pem 
+            - ./xdmod1.crt:/etc/xdmod/xdmod1.crt
+            - ./xdmod1.key:/etc/xdmod/xdmod1.key
+            - ./nginx.conf:/etc/nginx/nginx.conf
+networks:
+    jupyter-net:
+        name: jupyter-net
+secrets:
+    jwt-public-key:
+        file: ../jwt-key.pub
+    jwt-private-key:
+        file: ../jwt-key
+
