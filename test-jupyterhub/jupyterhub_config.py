@@ -11,16 +11,24 @@ c.JupyterHub.hub_connect_ip = 'jupyterhub'
 c.DockerSpawner.environment = {
     'XDMOD_HOST': "https://xdmod:443/",
     'JUPYTERHUB_JWT_URL': "http://jwt-service:9888/",
-    'CURL_CA_BUNDLE': "/etc/pki/tls/certs/xdmod.crt"
+    'CURL_CA_BUNDLE': "/etc/pki/tls/certs/xdmod.crt",
+    'JUPYTERHUB_API_URL': 'http://jupyterhub:8081/jupyter/hub/api'
 }
 c.JupyterHub.services = [
-    {   
+    {
         'name': 'chart-service',
         'url': 'http://chart-service:2323/',
-        'api_token': 'super-secret1'
+        'oauth_client_id': 'service-chart-service',
+        'api_token': 'c780c3d34d334706b9988b5f5211d49d',
+        'admin': True,
+        'oauth_redirect_uri': 'https://chart-service/jupyter/services/chart-service/oauth_callback/'
     }
 ]
 c.JupyterHub.load_roles = [
+    {
+        'name': 'user',
+        'scopes': ['access:services', 'self']
+    }
 ]
 c.Authenticator.admin_users = {
     'admin',
