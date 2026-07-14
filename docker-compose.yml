@@ -6,24 +6,14 @@ services:
         networks:
             - jupyter-net
         shm_size: 2g
-        ports:
-            - "8443:443"
         stdin_open: true
         tty: true
         command: sleep infinity
-    notebook:
-        image: xdmod-data
-        hostname: notebook
-        container_name: notebook
-        environment:
-            XDMOD_HOST: "https://xdmod:443/"
-            JUPYTERHUB_JWT_URL: "http://jwt-service:9888/"
-            CURL_CA_BUNDLE: "/etc/pki/tls/certs/xdmod.crt"
-        networks:
-            - jupyter-net
-        ports:
-            - "8888:8888"
-        command: start-notebook.py --ServerApp.allow_origin='*' --NotebookApp.token=secret
+        expose:
+            - 443
+        volumes:
+            - ./web-setup/xdmod.crt:/etc/pki/tls/certs/xdmod.crt
+            - ./web-setup/xdmod.key:/etc/pki/tls/private/xdmod.key
     jwt-service:
         build: ./jwt-service
         hostname: jwt-service
@@ -33,12 +23,47 @@ services:
         networks:
             - jupyter-net
         expose:
-            - 9888
+            - 9888      
+    jupyterhub:
+        build: ./jupyterhub
+        hostname: jupyterhub
+        container_name: jupyterhub
+        networks: 
+            - jupyter-net
+        volumes: 
+            - ./jupyterhub/jupyterhub_config.py:/srv/jupyterhub/jupyterhub_config.py
+            - "/var/run/docker.sock:/var/run/docker.sock"
+        expose:
+            - 8001
+    chart-service:
+       build: ./chart-service
+       hostname: chart-service
+       container_name: chart-service
+       networks:
+            - jupyter-net
+       expose:
+            - 2323
+       environment: 
+            JUPYTERHUB_API_TOKEN: 'c780c3d34d334706b9988b5f5211d49d'    
+    web-server:
+       image: nginx:1.14.1
+       hostname: web-server
+       container_name: web-server
+       networks:
+            - jupyter-net
+       ports:
+            - "8443:443"
+       volumes:
+            - ./web-setup/dhparams.pem:/etc/xdmod/dhparams.pem 
+            - ./web-setup/xdmod.crt:/etc/xdmod/xdmod.crt
+            - ./web-setup/xdmod.key:/etc/xdmod/xdmod.key
+            - ./web-setup/nginx.conf:/etc/nginx/nginx.conf
 networks:
     jupyter-net:
+        name: jupyter-net
 secrets:
     jwt-public-key:
-        file: ./jwt-key.pub
+        file: ./jwt-service/jwt-key.pub
     jwt-private-key:
-        file: ./jwt-key
+        file: ./jwt-service/jwt-key
 

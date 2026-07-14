@@ -74,7 +74,7 @@ class ChartServiceHandler(HubOAuthenticated, RequestHandler):
         self.hub_auth.hub_prefix = '/jupyter'
         self.hub_auth.oauth_client_id = 'service-chart-service'
         self.hub_auth.oauth_redirect_uri = '/jupyter/services/chart-service/oauth_callback/'
-        self.api_url = 'http://jupyterhub:8000/jupyter/hub/api/'
+        self.hub_auth.api_url = 'http://jupyterhub:8000/jupyter/hub/api/'
         self.hub_host = 'http://jupyterhub:8000'
         self.config = {}
     @authenticated

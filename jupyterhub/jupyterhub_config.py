@@ -21,7 +21,12 @@ c.JupyterHub.services = [
         'oauth_client_id': 'service-chart-service',
         'api_token': 'c780c3d34d334706b9988b5f5211d49d',
         'admin': True,
-        'oauth_redirect_uri': 'https://chart-service/jupyter/services/chart-service/oauth_callback/'
+        'oauth_redirect_uri': '/jupyter/services/chart-service/oauth_callback/',
+        'oauth_client_allowed_scopes':[
+            'users',
+            'servers',
+            'access:servers!user'
+        ]
     }
 ]
 c.JupyterHub.load_roles = [
