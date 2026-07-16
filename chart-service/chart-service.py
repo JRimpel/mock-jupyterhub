@@ -180,9 +180,10 @@ def notebook_generation(config):
         filter_dict.setdefault(dim_id, []).append(value)
 
     for dim_id, values in filter_dict.items():
-        joined = "', '".join(values)
+        joined = ", ".join(values)
         filters += f"\n\t\t'{dim_id}': ('{joined}'),"
-        sub_title += f"{dim_id}: {joined.replace("'", '')}"
+        sub_title += f"{dim_id}:{joined}"
+
 
     # ---- setup for the data-fetch / plot-building loop --------------------
     data_calls = "# Call to Data Analytics Framework requesting data \nwith dw:"
@@ -406,9 +407,9 @@ for col in data_{i}:
     update_layout += "\n)\n"
     plot_chart += (
         f"{update_layout}\n# Format legend and set index interval\n"
-        f"plot.update_layout(legend_x=0, legend_y=-0.3, {x_value_labels})"
-        f"{'\nplot.update_yaxes(showgrid=False)' if data_series['total'] > 1 else ''}"
-        f"\n\nplot.show()"
+        f"plot.update_layout(legend_x=0, legend_y=-0.3, {x_value_labels})\n"
+        f"{'plot.update_yaxes(showgrid=False)' if data_series['total'] > 1 else ''}\n\n"
+        f"plot.show()"
     )
 
     ret_json["cells"].extend([
