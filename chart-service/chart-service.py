@@ -182,10 +182,10 @@ def notebook_generation(config):
     for dim_id, values in filter_dict.items():
         joined = "', '".join(values)
         filters += f"\n\t\t'{dim_id}': ('{joined}'),"
-        sub_title += f"{dim_id}: {joined.replace(chr(39), '')}"
+        sub_title += f"{dim_id}: {joined.replace("'", '')}"
 
     # ---- setup for the data-fetch / plot-building loop --------------------
-    data_calls = "# Call to Data Analytics Framework requesting data \\n\n\twith dw:"
+    data_calls = "# Call to Data Analytics Framework requesting data \nwith dw:"
 
     data_series = config["data_series"]
     plot_chart = "" if data_series["total"] == 1 else "plot = go.Figure()\n"
@@ -224,7 +224,7 @@ def notebook_generation(config):
         elif multiple_metrics:
             return (
                 f"\n# Rename column names to specify Realm and/or Metric\n"
-                f"newColNames = {{}}\n"
+                f"newColNames = {{}} \n"
                 f"for col in data_{i}.columns :\n"
                 f"    newColNames[col] = {dept_expr} + ' [' + label_{i} + ']'\n"
                 f"data_{i} = data_{i}.rename(columns=newColNames)"
@@ -243,7 +243,7 @@ def notebook_generation(config):
     curr_side = "left"
     # tracks which metrics are used so repeated metrics get merged into the
     # dataset previously fetched for that same metric
-    metrics_list: dict[str, int] = {}
+    metrics_list = {}
 
     # ---- main loop over data series ---------------------------------------
     for i in range(data_series["total"]):
@@ -289,10 +289,10 @@ def notebook_generation(config):
     dataset_type='{data_type}',
     aggregation_unit='{aggregation_unit}',
 )
-    \\n# Set data {i}'s metric label
+    \n# Set data {i}'s metric label
     label_{i} = dw.describe_metrics('{realm}').loc['{metric}', 'label']
     {rename_cols_code(i, realm, dimension)}
-    \\n# Merge data {i} into data {metrics_list[metric_text]} since they share the same metric
+    \n# Merge data {i} into data {metrics_list[metric_text]} since they share the same metric
     data_{metrics_list[metric_text]} = (data_{metrics_list[metric_text]}.merge(data_{i}, on='Time', how='outer', sort=True))"""
             continue
         else:
@@ -309,18 +309,18 @@ def notebook_generation(config):
                 graph = f"""
 if(data_{i}.size > 10):
     others_sum=data_{i}[~data_{i}.isin(top_ten)].sum()
-    data_{i} = top_ten.combine_first(pd.Series({{'Other ' + str(data_{i}.size - 10): others_sum}}))\\n"""
+    data_{i} = top_ten.combine_first(pd.Series({{'Other ' + str(data_{i}.size - 10): others_sum}}))\n"""
             else:
                 graph = f"\ndata_{i} = top_ten"
             data_view = f"""
-\\n# Process the data series, combine the lower values into a single Other category, and change to series to a dataframe
+\n# Process the data series, combine the lower values into a single Other category, and change to series to a dataframe
 top_ten=data_{i}.nlargest(10)
 {graph}
 data_{i} = data_{i}.to_frame()
 columns_list = data_{i}.columns.tolist()"""
         else:
             data_view = f"""
-\\n# Limit the number of data items/source to at most 10 and sort by descending
+\n# Limit the number of data items/source to at most 10 and sort by descending
 columns_list = data_{i}.columns.tolist()
 if (len(columns_list) > 10):
     column_sums = data_{i}.sum()
@@ -328,7 +328,7 @@ if (len(columns_list) > 10):
     data_{i} = data_{i}[top_ten_columns]"""
 
         data_calls += f"""
-    \\n# Fetch data {i}
+    \n# Fetch data {i}
     data_{i} = dw.get_data(
         duration=('{duration}'),
         realm='{realm}',
@@ -338,7 +338,7 @@ if (len(columns_list) > 10):
         dataset_type='{data_type}',
         aggregation_unit='{aggregation_unit}',
     )
-    \\n# Set data {i}'s metric label
+    \n# Set data {i}'s metric label
     label_{i} = dw.describe_metrics('{realm}').loc['{metric}', 'label']
     {rename_cols_code(i, realm, dimension)}"""
 
@@ -351,14 +351,13 @@ if (len(columns_list) > 10):
             sub_title_html = f"<br><sup>{sub_title}</sup>," if sub_title else ""
             log_scale_code = f"log_{log_axis}=True," if log_scale else ""
             pie_args = "\nvalues= columns_list[0],\n names= data_0.index," if graph_type == "pie" else ""
-
             plot_chart += f"""
-\\n# Format and draw graph to the screen
+\n# Format and draw graph to the screen
 plot = px.{graph_type}(
     data_0, {pie_args}
     {axis}
     title='{title}',{sub_title_html}{log_scale_code}{line_shape}
-)\\n"""
+)\n"""
         else:
             bar_init = "i = 0" if (graph_type == "bar" and i == 0) else ""
             trace_type = "Bar" if graph_type == "bar" else "Scatter"
@@ -382,7 +381,7 @@ for col in data_{i}:
         {bar_offset}
     ))
     {bar_incr}"""
-
+#may change axis_extra
             axis_extra = ""
             if i != 0:
                 axis_extra = f"""
@@ -408,7 +407,7 @@ for col in data_{i}:
     plot_chart += (
         f"{update_layout}\n# Format legend and set index interval\n"
         f"plot.update_layout(legend_x=0, legend_y=-0.3, {x_value_labels})"
-        f"{chr(10) + 'plot.update_yaxes(showgrid=False)' if data_series['total'] > 1 else ''}"
+        f"{'\nplot.update_yaxes(showgrid=False)' if data_series['total'] > 1 else ''}"
         f"\n\nplot.show()"
     )
 
