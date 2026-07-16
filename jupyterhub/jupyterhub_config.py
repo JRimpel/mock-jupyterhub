@@ -1,4 +1,4 @@
-# Configuration file for jupyterhub.
+import sys
 
 c = get_config()  #noqa
 
@@ -29,6 +29,12 @@ c.JupyterHub.services = [
             'servers',
             'access:servers!user'
         ]
+    },
+    {
+        'name': 'jwt-service',
+        'url': 'http://jwt-service:9888/',
+        'command': [sys.executable, '/usr/bin/jwt-service.py']
+        'display': False
     }
 ]
 

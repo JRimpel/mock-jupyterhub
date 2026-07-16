@@ -14,27 +14,19 @@ services:
         volumes:
             - ./web-setup/xdmod.crt:/etc/pki/tls/certs/xdmod.crt
             - ./web-setup/xdmod.key:/etc/pki/tls/private/xdmod.key
-    jwt-service:
-        build: ./jwt-service
-        hostname: jwt-service
-        container_name: jwt-service
-        secrets:
-            - jwt-private-key
-        networks:
-            - jupyter-net
-        expose:
-            - 9888      
     jupyterhub:
         build: ./jupyterhub
         hostname: jupyterhub
         container_name: jupyterhub
-        networks: 
+        networks:
             - jupyter-net
-        volumes: 
+        volumes:
             - ./jupyterhub/jupyterhub_config.py:/srv/jupyterhub/jupyterhub_config.py
             - "/var/run/docker.sock:/var/run/docker.sock"
         expose:
             - 8001
+        secrets:
+            - jwt-private-key
     chart-service:
        build: ./chart-service
        hostname: chart-service
@@ -43,8 +35,8 @@ services:
             - jupyter-net
        expose:
             - 2323
-       environment: 
-            JUPYTERHUB_API_TOKEN: 'c780c3d34d334706b9988b5f5211d49d'    
+       environment:
+            JUPYTERHUB_API_TOKEN: 'c780c3d34d334706b9988b5f5211d49d'
     web-server:
        image: nginx:1.14.1
        hostname: web-server
@@ -54,7 +46,7 @@ services:
        ports:
             - "8443:443"
        volumes:
-            - ./web-setup/dhparams.pem:/etc/xdmod/dhparams.pem 
+            - ./web-setup/dhparams.pem:/etc/xdmod/dhparams.pem
             - ./web-setup/xdmod.crt:/etc/xdmod/xdmod.crt
             - ./web-setup/xdmod.key:/etc/xdmod/xdmod.key
             - ./web-setup/nginx.conf:/etc/nginx/nginx.conf
