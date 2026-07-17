@@ -1,0 +1,12 @@
+[build-system]
+requires = ["setuptools"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "xdmod-jupyterhub-authenticator"
+version = "1.0.0"
+description = "XDMoD Authenticator for JupyterHub"
+dependencies = [
+    "jupyterhub",
+    "python-jose",
+]

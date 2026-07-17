@@ -11,15 +11,24 @@ from tornado.web import Application, HTTPError, RequestHandler
 
 JWT_EXPIRATION_MINUTES = 5
 
-class JWTServiceHandler(RequestHandler):
+class JWTServiceHandler(HubAuthenticated, RequestHandler):
 
     def get(self):
-        token = self.create_token('admin')
-        print('TOKEN CREATED AND RETURNING')
+        auth_header = self.request.headers.get('Authorization', None)
+        if not auth_header:
+            raise HTTPError(401, 'Missing Authorization header.')
+
+        jupyterhub_api_token = auth_header.split()[1]
+        jupyterhub_user = self.hub_auth.user_for_token(jupyterhub_api_token, use_cache=False)
+
+        if not jupyterhub_user:
+            raise HTTPError(401, 'Invalid JupyterHub API token.')
+
+        username = jupyterhub_user['name']
+        token = self.create_token(username)
         self.write(token)
 
     def create_token(self, username):
-        print('CREATING TOKEN...')
         claims_set = {
             'sub': username,
             'exp': datetime.now() + timedelta(minutes=JWT_EXPIRATION_MINUTES)
@@ -32,16 +41,13 @@ class JWTServiceHandler(RequestHandler):
             )
 
 def main():
-    print('main opened')
     application = Application([('/', JWTServiceHandler)],debug=True)
 
     http_server = HTTPServer(application)
     url = urlparse('http://0.0.0.0:9888')
 
     http_server.listen(url.port, url.hostname)
-    print('server running')
     IOLoop.current().start()
 
 if __name__=='__main__':
     main()
-

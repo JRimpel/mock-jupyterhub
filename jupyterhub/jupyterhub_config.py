@@ -1,10 +1,11 @@
-# Configuration file for jupyterhub.
+import sys
 
 c = get_config()  #noqa
+
 c.JupyterHub.port = 8000
 c.JupyterHub.base_url = '/jupyter/'
 c.JupyterHub.spawner_class = 'dockerspawner.DockerSpawner'
-c.JupyterHub.authenticator_class = 'dummy'
+c.JupyterHub.authenticator_class = 'xdmodauthenticator.XDMoDAuthenticator'
 c.DockerSpawner.image = "xdmod-data:latest"
 c.DockerSpawner.network_name = "jupyter-net"
 c.JupyterHub.hub_connect_ip = 'jupyterhub'
@@ -14,6 +15,7 @@ c.DockerSpawner.environment = {
     'CURL_CA_BUNDLE': "/etc/pki/tls/certs/xdmod.crt",
     'JUPYTERHUB_API_URL': 'http://jupyterhub:8081/jupyter/hub/api'
 }
+
 c.JupyterHub.services = [
     {
         'name': 'chart-service',
@@ -27,14 +29,22 @@ c.JupyterHub.services = [
             'servers',
             'access:servers!user'
         ]
+    },
+    {
+        'name': 'jwt-service',
+        'url': 'http://jwt-service:9888/',
+        'command': [sys.executable, '/usr/bin/jwt-service.py']
+        'display': False
     }
 ]
+
 c.JupyterHub.load_roles = [
     {
         'name': 'user',
         'scopes': ['access:services', 'self']
     }
 ]
+
 c.Authenticator.admin_users = {
     'admin',
     'admin1',
