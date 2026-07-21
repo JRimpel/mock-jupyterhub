@@ -7,7 +7,7 @@ from jose import jwt
 from tornado.httpserver import HTTPServer
 from tornado.ioloop import IOLoop
 from tornado.web import Application, HTTPError, RequestHandler
-
+from jupyterhub.services.auth import HubAuthenticated
 
 JWT_EXPIRATION_MINUTES = 5
 
@@ -41,10 +41,10 @@ class JWTServiceHandler(HubAuthenticated, RequestHandler):
             )
 
 def main():
-    application = Application([('/', JWTServiceHandler)],debug=True)
+    application = Application([('/jupyter/services/jwt-service', JWTServiceHandler)],debug=True)
 
     http_server = HTTPServer(application)
-    url = urlparse('http://0.0.0.0:9888')
+    url = urlparse('http://localhost:9888')
 
     http_server.listen(url.port, url.hostname)
     IOLoop.current().start()

@@ -14,8 +14,12 @@ services:
         volumes:
             - ./web-setup/xdmod.crt:/etc/pki/tls/certs/xdmod.crt
             - ./web-setup/xdmod.key:/etc/pki/tls/private/xdmod.key
+        secrets:
+            - xdmod-private.pem
     jupyterhub:
-        build: ./jupyterhub
+        build: 
+            context: .
+            dockerfile: jupyterhub/Dockerfile
         hostname: jupyterhub
         container_name: jupyterhub
         networks:
@@ -27,6 +31,7 @@ services:
             - 8001
         secrets:
             - jwt-private-key
+            - xdmod-public
     chart-service:
        build: ./chart-service
        hostname: chart-service
@@ -58,4 +63,7 @@ secrets:
         file: ./jwt-service/jwt-key.pub
     jwt-private-key:
         file: ./jwt-service/jwt-key
-
+    xdmod-private.pem:
+        file: ./web-setup/xdmod-private.pem
+    xdmod-public:
+        file: ./web-setup/xdmod-public.pem

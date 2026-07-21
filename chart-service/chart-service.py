@@ -132,7 +132,6 @@ def notebook_generation(config):
                 'cells': [
                     create_cell('markdown', 'The following cell includes all the necessary imports.  Currently, must run XDMOD-Data-First-Example at least once in order for any generated code to work.'),
                     create_cell('code', 'import plotly.express as px\nimport plotly.io as pio\nimport pandas as pd\nimport plotly.graph_objects as go\nimport xdmod_data.themes\npio.templates.default = "timeseries"'),
-                    create_cell('code', 'import os\nos.environ["JUPYTERHUB_API_TOKEN"] = "placeholder"'),
                     create_cell('code', 'from xdmod_data.warehouse import DataWarehouse\ndw = DataWarehouse()')
                 ]
             }
